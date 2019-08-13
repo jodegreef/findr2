@@ -1,45 +1,56 @@
-import React, { useState } from "react";
-import { Box, TextField, Paper, Button, Container } from "@material-ui/core";
+import React, { useState, useContext } from "react";
 import SearchBox from "../search-box/SearchBox";
 import ResultList from "../result-list/ResultList";
+import Firebase, { FirebaseContext } from "../firebase-context";
+import { useCollection } from "react-firebase-hooks/firestore";
+import EntryForm from "../entry-form/EntryForm";
+import IItem from "../../models/item";
 
 export default (props: any) => {
-  var [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState("");
 
-  const results = [
-    {
-      id: "1",
-      name: "test"
-    },
-    {
-      id: "2",
-      name: "test2"
-    },
-    {
-      id: "3",
-      name: "lego"
-    },
-    {
-      id: "4",
-      name: "utp kabels"
-    }
-  ];
+  const firebase = useContext(FirebaseContext);
 
-  const onSearch = (value: any) => {
-    console.log(value);
-    setFilterValue(value.toLowerCase());
+  const onSearch = (filterValue: any) => {
+    console.log(filterValue);
+    setFilterValue(filterValue.toLowerCase());
   };
 
+  const [value, loading, error] = useCollection(
+    (firebase as Firebase).fireStore.collection("items"),
+    {
+      snapshotListenOptions: { includeMetadataChanges: true }
+    }
+  );
+
+  function saveNewItem(item: IItem) {
+    const itemsCollection = (firebase as Firebase).fireStore.collection(
+      "items"
+    );
+    itemsCollection.add(item);
+  }
+
+  const resultList = !value
+    ? []
+    : value.docs.map(doc => {
+        return {
+          id: doc.id,
+          name: doc.data().name
+        };
+      });
   return (
     <>
       <SearchBox onSearch={onSearch}></SearchBox>
-      <Box>
+      <div>
         <ResultList
-          blabla={results.filter(x =>
-            x.name.toLowerCase().includes(filterValue)
+          results={resultList.filter(
+            x => !x.name || x.name.toLowerCase().includes(filterValue)
           )}
         ></ResultList>
-      </Box>
+      </div>
+      <div>
+        <EntryForm item={{ name: "" }} onSave={saveNewItem}></EntryForm>
+      </div>
     </>
   );
 };

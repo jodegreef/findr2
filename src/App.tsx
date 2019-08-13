@@ -2,7 +2,7 @@ import React from "react";
 import "./App.css";
 import { AppBar } from "@material-ui/core";
 import { useAuthState } from "react-firebase-hooks/auth";
-
+import useFetch, { useJsonResponse } from "react-use-fetch";
 import Firebase, { FirebaseContext } from "./components/firebase-context";
 import Search from "./components/search/Search";
 
@@ -10,12 +10,20 @@ const firebase = new Firebase();
 
 const App: React.FC = () => {
   const [user, loading, error] = useAuthState(firebase.auth);
+
+  const { response } = useFetch("/config.json");
+
+  console.log(response);
+
+  const [json] = useJsonResponse(response);
+
   const login = () => {
-    firebase.auth.signInWithEmailAndPassword("", "");
+    firebase.auth.signInWithEmailAndPassword(json.username, json.pw);
   };
 
-  login();
-
+  if (json) {
+    login();
+  }
   if (loading) {
     return <span>Auth'ing</span>;
   }

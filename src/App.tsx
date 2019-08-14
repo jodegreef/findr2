@@ -1,6 +1,5 @@
 import React from "react";
 import "./App.css";
-import { AppBar } from "@material-ui/core";
 import { useAuthState } from "react-firebase-hooks/auth";
 import useFetch, { useJsonResponse } from "react-use-fetch";
 import Firebase, { FirebaseContext } from "./components/firebase-context";
@@ -12,8 +11,6 @@ const App: React.FC = () => {
   const [user, loading, error] = useAuthState(firebase.auth);
 
   const { response } = useFetch("/config.json");
-
-  console.log(response);
 
   const [json] = useJsonResponse(response);
 
@@ -36,7 +33,6 @@ const App: React.FC = () => {
   return (
     <>
       <FirebaseContext.Provider value={firebase}>
-        <AppBar position="static">TEST</AppBar>
         <Search></Search>
       </FirebaseContext.Provider>
     </>

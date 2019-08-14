@@ -7,17 +7,21 @@ import EntryForm from "../entry-form/EntryForm";
 import IItem from "../../models/item";
 
 export default (props: any) => {
+  const defaultNewItem = { name: "", location: "", labels: "" };
+
   const [filterValue, setFilterValue] = useState("");
 
   const firebase = useContext(FirebaseContext);
 
   const onSearch = (filterValue: any) => {
-    console.log(filterValue);
     setFilterValue(filterValue.toLowerCase());
   };
 
   const [value, loading, error] = useCollection(
-    (firebase as Firebase).fireStore.collection("items"),
+    (firebase as Firebase).fireStore
+      .collection("items")
+      .orderBy("name")
+      .limit(10),
     {
       snapshotListenOptions: { includeMetadataChanges: true }
     }
@@ -30,18 +34,25 @@ export default (props: any) => {
     itemsCollection.add(item);
   }
 
-  const resultList = !value
-    ? []
-    : value.docs.map(doc => {
-        return {
-          id: doc.id,
-          name: doc.data().name
-        };
-      });
+  const resultList =
+    !value || loading || error
+      ? []
+      : value.docs.map(doc => {
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            labels: doc.data().labels,
+            location: doc.data().location.toUpperCase(),
+            sublocation: doc.data().sublocation
+          };
+        });
   return (
     <>
+      <h3>Search</h3>
       <SearchBox onSearch={onSearch}></SearchBox>
       <div>
+        <h3>Results</h3>
+
         <ResultList
           results={resultList.filter(
             x => !x.name || x.name.toLowerCase().includes(filterValue)
@@ -49,7 +60,8 @@ export default (props: any) => {
         ></ResultList>
       </div>
       <div>
-        <EntryForm item={{ name: "" }} onSave={saveNewItem}></EntryForm>
+        <h3>New item</h3>
+        <EntryForm item={defaultNewItem} onSave={saveNewItem}></EntryForm>
       </div>
     </>
   );

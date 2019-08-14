@@ -3,3 +3,9 @@ npx create-react-app findr2 --typescript
 npm install @material-ui/core
 
 npm install --save-dev --save-exact prettier
+
+
+--
+
+npm install -g serve
+serve -s build

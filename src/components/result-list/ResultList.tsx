@@ -1,89 +1,70 @@
 import React, { useContext, useState } from "react";
 import Firebase, { FirebaseContext } from "../firebase-context";
 import IItem from "../../models/item";
-import EntryForm from "../entry-form/EntryForm";
-import {
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody
-} from "@material-ui/core";
+import MaterialTable from "material-table";
 
 export interface IResultListProps {
+  collectionName: string;
   results: IItem[];
 }
 
 export default (props: IResultListProps) => {
   const firebase = useContext(FirebaseContext);
 
-  let [itemToEdit, setItemToEdit] = useState<IItem | undefined>(undefined);
-
-  function deleteItem(id: any) {
-    const itemsCollection = (firebase as Firebase).fireStore.collection(
-      "items"
-    );
-    itemsCollection.doc(id).delete();
-  }
-
-  function startEditItem(item: IItem) {
-    setItemToEdit(item);
-  }
-
-  function saveEditItem(item: IItem) {
-    const itemsCollection = (firebase as Firebase).fireStore.collection(
-      "items"
-    );
-    itemsCollection.doc(item.id).set(item);
-    setItemToEdit(undefined);
-  }
-
   return (
     <>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Location</TableCell>
-            <TableCell>Sublocation</TableCell>
-            <TableCell>Edit</TableCell>
-            <TableCell>Delete</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {props.results.map(x =>
-            itemToEdit && itemToEdit.id === x.id ? (
-              <TableRow key={x.id}>
-                <TableCell>
-                  <EntryForm item={x} onSave={saveEditItem}></EntryForm>
-                </TableCell>
-              </TableRow>
-            ) : (
-              <TableRow key={x.id}>
-                <TableCell>{x.name}</TableCell>
-                <TableCell>{x.location}</TableCell>
-                <TableCell>{x.sublocation}</TableCell>
-                <TableCell>
-                  <span
-                    style={{ cursor: "pointer" }}
-                    onClick={() => startEditItem(x)}
-                  >
-                    EDIT
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span
-                    style={{ cursor: "pointer" }}
-                    onClick={() => deleteItem(x.id)}
-                  >
-                    DELETE
-                  </span>
-                </TableCell>
-              </TableRow>
-            )
-          )}
-        </TableBody>
-      </Table>
+      <div style={{ maxWidth: "100%" }}>
+        <MaterialTable
+          editable={{
+            isEditable: rowData => true, //rowData.name === "Name", // only name(a) rows would be editable
+            isDeletable: rowData => true, //rowData.name === "b", // only name(a) rows would be deletable
+            onRowAdd: newData =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  {
+                    const itemsCollection = (firebase as Firebase).fireStore.collection(
+                      props.collectionName
+                    );
+                    itemsCollection.add(newData);
+                  }
+                  resolve();
+                }, 1000);
+              }),
+            onRowUpdate: (newData, oldData) =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  {
+                    const itemsCollection = (firebase as Firebase).fireStore.collection(
+                      props.collectionName
+                    );
+                    itemsCollection.doc(newData.id).set(newData);
+                  }
+                  resolve();
+                }, 1000);
+              }),
+            onRowDelete: oldData =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  {
+                    const itemsCollection = (firebase as Firebase).fireStore.collection(
+                      props.collectionName
+                    );
+                    itemsCollection.doc(oldData.id).delete();
+                  }
+                  resolve();
+                }, 1000);
+              })
+          }}
+          columns={[
+            { title: "Name", field: "name" },
+            { title: "Location", field: "location" },
+            { title: "Sublocation", field: "sublocation" }
+          ]}
+          data={props.results}
+          title="Inventory"
+          options={{ pageSize: 15 }}
+        />
+      </div>
     </>
   );
 };

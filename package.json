@@ -9,6 +9,7 @@
     "@types/react": "16.9.1",
     "@types/react-dom": "16.8.5",
     "firebase": "^6.3.5",
+    "material-table": "^1.48.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-firebase-hooks": "^2.1.0",

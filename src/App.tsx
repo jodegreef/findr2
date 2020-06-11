@@ -4,6 +4,9 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import useFetch, { useJsonResponse } from "react-use-fetch";
 import Firebase, { FirebaseContext } from "./components/firebase-context";
 import Search from "./components/search/Search";
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { Title } from "./components/title/Title";
+import { getThemeProps } from "@material-ui/styles";
 
 const firebase = new Firebase();
 
@@ -32,11 +35,39 @@ const App: React.FC = () => {
 
   return (
     <>
-      <FirebaseContext.Provider value={firebase}>
-        <Search></Search>
-      </FirebaseContext.Provider>
+      <Router>
+        <Link class="menu" to="/">
+          Inventory
+        </Link>{" "}
+        |{" "}
+        <Link class="menu" to="/lego">
+          LEGO inventory
+        </Link>
+        <br></br>
+        <br></br>
+        <FirebaseContext.Provider value={firebase}>
+          <Route exact path="/" component={Home} />
+          <Route path="/lego" component={Lego} />
+        </FirebaseContext.Provider>
+      </Router>
     </>
   );
 };
+
+function Home() {
+  return (
+    <Title title="Inventory">
+      <Search name="items" title="Inventory"></Search>
+    </Title>
+  );
+}
+
+function Lego() {
+  return (
+    <Title title="LEGO inventory">
+      <Search name="legoItems" title="LEGO Inventory"></Search>
+    </Title>
+  );
+}
 
 export default App;
